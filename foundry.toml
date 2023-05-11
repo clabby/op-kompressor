@@ -1,6 +1,45 @@
+################################################################
+#                       Default profile                        #
+################################################################
+
 [profile.default]
 src = 'src'
 out = 'out'
 libs = ['lib']
+remappings = ['forge-std=lib/forge-std/src', 'src=src']
+solc = '0.8.19'
+optimizer = true
+optimizer_runs = 1_000_000
 
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+[profile.default.fuzz]
+runs = 512
+
+################################################################
+#                          CI profile                          #
+################################################################
+
+[profile.ci]
+solc = '0.8.19'
+via_ir = true
+optimizer = true
+optimizer_runs = 1_000_000
+
+[profile.ci.fuzz]
+runs = 2048
+
+################################################################
+#                        Build Profile                         #
+################################################################
+
+[profile.build]
+solc = '0.8.19'
+via_ir = true
+optimizer = true
+optimizer_runs = 100_000_000
+
+################################################################
+#                         FMT Settings                         #
+################################################################
+
+[fmt]
+bracket_spacing = true
