@@ -1,0 +1,2 @@
+[workspace]
+members = ["bin", "crates/example"]

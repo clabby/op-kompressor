@@ -1,0 +1,11 @@
+[package]
+name = "example-lib"
+description = "An example library crate"
+authors = ["clabby"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.70"
+ethers = "2.0.1"
+tracing = "0.1.37"

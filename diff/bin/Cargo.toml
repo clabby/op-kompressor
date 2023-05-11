@@ -1,0 +1,20 @@
+[package]
+name = "boilerplate-rs"
+description = "Binary crate for boilerplate-rs"
+authors = ["clabby"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# External
+clap = { version = "4.1.13", features = ["derive"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.16"
+anyhow = "1.0.70"
+
+# Local
+example-lib = { path = "../crates/example" }
+
+[[bin]]
+name = "boilerplate-rs"
+path = "src/boilerplate.rs"
