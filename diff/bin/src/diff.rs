@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 use clap::{ArgAction, Parser};
 use tracing::Level;
 
-/// A simple clap boilerplate
+/// The command line arguments for the `diff` binary
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct Args {
@@ -10,24 +10,49 @@ struct Args {
     #[arg(long, short, help = "Verbosity level (0-4)", action = ArgAction::Count)]
     v: u8,
 
-    /// An example flag
+    /// Bytes to compress or decompress
     #[arg(short, long)]
     in_bytes: String,
+
+    /// Mode of compression or decompression
+    #[arg(short, long)]
+    mode: Mode,
+}
+
+/// The mode of compression or decompression
+#[derive(Debug, Clone)]
+enum Mode {
+    ZeroKompress,
+    ZeroDekompress,
+}
+
+impl From<String> for Mode {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "zero-kompress" => Mode::ZeroKompress,
+            "zero-dekompress" => Mode::ZeroDekompress,
+            _ => panic!("Invalid mode"),
+        }
+    }
 }
 
 fn main() -> Result<()> {
     // Parse the command arguments
-    let Args { v, in_bytes } = Args::parse();
+    let Args { v, in_bytes, mode } = Args::parse();
 
     // Initialize the tracing subscriber
     init_tracing_subscriber(v)?;
 
-    tracing::debug!(target: "boilerplate_cli", "Attempting to hash input bytes: {:?}", in_bytes);
-    let digest = example_lib::parse_and_hash(in_bytes)?;
-    println!(
-        "Keccak256 digest of input: 0x{}",
-        example_lib::encode_hex(digest)
-    );
+    match mode {
+        Mode::ZeroKompress => {
+            tracing::info!(target: "diff_cli", "Attempting to ZeroKompress input bytes: {:?}", in_bytes);
+            print!("{}", zero_kompressor::zero_kompress(in_bytes)?);
+        }
+        Mode::ZeroDekompress => {
+            tracing::info!(target: "diff_cli", "Attempting to ZeroDekompress input bytes: {:?}", in_bytes);
+            print!("{}", zero_kompressor::zero_dekompress(in_bytes)?);
+        }
+    }
 
     Ok(())
 }

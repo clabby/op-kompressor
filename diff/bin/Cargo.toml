@@ -13,8 +13,8 @@ tracing-subscriber = "0.3.16"
 anyhow = "1.0.70"
 
 # Local
-example-lib = { path = "../crates/example" }
+zero-kompressor = { path = "../crates/zero-kompressor" }
 
 [[bin]]
-name = "boilerplate-rs"
-path = "src/boilerplate.rs"
+name = "diff"
+path = "src/diff.rs"

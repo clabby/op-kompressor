@@ -228,9 +228,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap 4.1.13",
- "example-lib",
  "tracing",
  "tracing-subscriber",
+ "zero-kompressor",
 ]
 
 [[package]]
@@ -1152,15 +1152,6 @@ dependencies = [
  "tracing",
  "walkdir",
  "yansi",
-]
-
-[[package]]
-name = "example-lib"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "ethers",
- "tracing",
 ]
 
 [[package]]
@@ -3680,6 +3671,15 @@ name = "yansi"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09041cd90cf85f7f8b2df60c646f853b7f535ce68f85244eb6731cf89fa498ec"
+
+[[package]]
+name = "zero-kompressor"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "ethers",
+ "tracing",
+]
 
 [[package]]
 name = "zeroize"

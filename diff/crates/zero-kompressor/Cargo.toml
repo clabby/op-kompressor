@@ -1,6 +1,6 @@
 [package]
-name = "example-lib"
-description = "An example library crate"
+name = "zero-kompressor"
+description = "A library for encoding and decoding ZeroKompressed bytes."
 authors = ["clabby"]
 version = "0.1.0"
 edition = "2021"
