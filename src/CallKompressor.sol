@@ -6,7 +6,6 @@ import { ZeroDekompressorLib } from "./lib/ZeroDekompressorLib.sol";
 /// @title CallKompressor
 /// @author clabby <https://github.com/clabby>
 contract CallKompressor {
-
     /// @dev When the `CallKompressor` receives a payload, it first decompresses it using
     /// `ZeroDekompressorLib.dekompressCalldata()`. Once the payload is decompressed, the
     /// `to` address as well as the payload are extracted in order to forward the call.
