@@ -1,4 +1,4 @@
-// SPDX-License-Identifer: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import { ZeroDekompressorLib } from "./lib/ZeroDekompressorLib.sol";
