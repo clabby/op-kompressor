@@ -1,6 +1,6 @@
 pragma solidity ^0.8.19;
 
-import { FFIHarness } from "../FFIHarness.sol";
+import { FFIHarness } from "../utils/FFIHarness.sol";
 import { ZeroDekompressorLib } from "src/lib/ZeroDekompressorLib.sol";
 
 contract MockDekompressor {
