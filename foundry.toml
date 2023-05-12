@@ -23,6 +23,7 @@ solc = '0.8.19'
 via_ir = true
 optimizer = true
 optimizer_runs = 1_000_000
+ffi = true
 
 [profile.ci.fuzz]
 runs = 2048

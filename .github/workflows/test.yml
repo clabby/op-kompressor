@@ -28,6 +28,21 @@ jobs:
           forge build --sizes
         id: build
 
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: Swatinem/rust-cache@v1
+        with:
+          cache-on-failure: true
+
+      - name: Build Differential Tests
+        working-directory: ./diff
+        run: cargo build --all --release
+        id: build-diff
+
       - name: Run Forge tests
         run: |
           forge test -vvv
