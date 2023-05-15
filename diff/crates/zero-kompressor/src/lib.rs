@@ -1,26 +1,28 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use ethers::utils::hex;
 
 /// ZeroKompress a byte array
 /// Run Length Encode only zeros in the byte array
-/// Inefficient, but eh, it's for differential testing. Clean up later.
-pub fn zero_kompress(bytes: String) -> Result<String> {
+pub fn zero_kompress<T: AsRef<[u8]>>(bytes: T) -> Result<String> {
     let mut result = Vec::default();
 
     let mut num_zeros = 0;
-    hex::decode(bytes.trim_start_matches("0x"))?
-        .into_iter()
-        .for_each(|byte| {
-            if byte == 0 {
-                if num_zeros == u8::MAX {
-                    fill_zeros(&mut result, &mut num_zeros);
-                }
-                num_zeros += 1;
-            } else {
+    hex::decode(bytes)?.into_iter().for_each(|byte| {
+        if byte == 0 {
+            // If we have reached the max number of zeros, add them to the result
+            // and continue counting.
+            if num_zeros == u8::MAX {
                 fill_zeros(&mut result, &mut num_zeros);
-                result.push(byte);
             }
-        });
+            num_zeros += 1;
+        } else {
+            // If we have zeros to add, add them to the result
+            fill_zeros(&mut result, &mut num_zeros);
+            // Copy `byte` into the result array
+            result.push(byte);
+        }
+    });
+    // If we have zeros to add, add them to the result
     fill_zeros(&mut result, &mut num_zeros);
 
     Ok(hex::encode(result))
@@ -28,20 +30,15 @@ pub fn zero_kompress(bytes: String) -> Result<String> {
 
 /// ZerkDekompress a byte array
 /// Take compressed bytes and return the original bytes with zeros added back in
-/// Inefficient, but eh, it's for differential testing. Clean up later.
-pub fn zero_dekompress(bytes: String) -> Result<String> {
-    let bytes = hex::decode(bytes.trim_start_matches("0x"))?;
+pub fn zero_dekompress<T: AsRef<[u8]>>(bytes: T) -> Result<String> {
+    let bytes = hex::decode(bytes)?;
     let mut result = Vec::default();
-
-    let mut iter = bytes.into_iter().peekable();
+    let mut iter = bytes.into_iter();
     while let Some(byte) = iter.next() {
         if byte == 0 {
-            if let Some(&next_byte) = iter.peek() {
-                iter.next();
-                result.resize(result.len() + next_byte as usize, 0);
-            } else {
-                anyhow::bail!("Invalid input");
-            }
+            // Expand the result array by `length` zeros
+            let length = iter.next().ok_or(anyhow!("Invalid input"))?;
+            result.resize(result.len() + length as usize, 0);
         } else {
             // Copy `byte` into the result array
             result.push(byte);

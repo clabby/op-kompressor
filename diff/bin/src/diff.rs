@@ -43,6 +43,9 @@ fn main() -> Result<()> {
     // Initialize the tracing subscriber
     init_tracing_subscriber(v)?;
 
+    // Trim the leading "0x" if it exists.
+    let in_bytes = in_bytes.trim_start_matches("0x").to_string();
+
     match mode {
         Mode::ZeroKompress => {
             tracing::info!(target: "diff_cli", "Attempting to ZeroKompress input bytes: {:?}", in_bytes);
