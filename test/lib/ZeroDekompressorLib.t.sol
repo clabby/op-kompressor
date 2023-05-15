@@ -8,6 +8,8 @@ import { ZeroDekompressorLib } from "src/lib/ZeroDekompressorLib.sol";
 contract ZeroDekompressorLib_Test is FFIHarness {
     MockDekompressor mockDekompressor;
 
+    error InvalidInput();
+
     function setUp() public {
         // Deploy a new `MockDekompressor`
         mockDekompressor = new MockDekompressor();
@@ -24,28 +26,28 @@ contract ZeroDekompressorLib_Test is FFIHarness {
 
     /// @dev Test dekompression
     function test_dekompressCalldata_middle_succeeds() public {
-        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"7f6b590c0600220200ff");
+        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"7f6b590c0006220002ff");
         assertTrue(success);
         assertEq(returndata, hex"7f6b590c000000000000220000ff");
     }
 
     /// @dev Test dekompression
     function test_dekompressCalldata_edgeEnd_succeeds() public {
-        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"0400ff");
+        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"0004ff");
         assertTrue(success);
         assertEq(returndata, hex"00000000ff");
     }
 
     /// @dev Test dekompression
     function test_dekompressCalldata_edgeStart_succeeds() public {
-        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"ff0400");
+        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"ff0004");
         assertTrue(success);
         assertEq(returndata, hex"ff00000000");
     }
 
     /// @dev Test dekompression (zero rollover once)
     function test_dekompressCalldata_zeroRollover_succeeds() public {
-        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"ff000500");
+        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"00ff0005");
         assertTrue(success);
         assertEq(
             returndata,
@@ -55,12 +57,26 @@ contract ZeroDekompressorLib_Test is FFIHarness {
 
     /// @dev Test dekompression (zero rollover multiple)
     function test_dekompressCalldata_zeroRolloverMultiple_succeeds() public {
-        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"ff00ff000500");
+        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"00ff00ff0005");
         assertTrue(success);
         assertEq(
             returndata,
             hex"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         );
+    }
+
+    /// @dev Tests that the `dekompressCalldata` function reverts if the input is invalid
+    function test_invalidInput_reverts() public {
+        (bool success, bytes memory returndata) = address(mockDekompressor).call(hex"ff00");
+        assertFalse(success);
+
+        bytes memory expectedReturndata = abi.encode(InvalidInput.selector);
+        assembly ("memory-safe") {
+            // Set the length of the expected returndata to 4.
+            mstore(expectedReturndata, 0x04)
+        }
+
+        assertEq(returndata, expectedReturndata);
     }
 
     /// @dev Differential test for dekompression against the Rust implementation

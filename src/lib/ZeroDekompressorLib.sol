@@ -4,6 +4,9 @@ pragma solidity ^0.8.19;
 /// @title ZerkDekompressorLib
 /// @author clabby <https://github.com/clabby>
 library ZeroDekompressorLib {
+    /// @dev Thrown when the calldata is not correctly encoded.
+    error InvalidInput();
+
     /// @notice Decodes ZeroKompressed calldata into memory.
     /// @return _out The uncompressed calldata in memory.
     function dekompressCalldata() internal pure returns (bytes memory _out) {
@@ -27,19 +30,27 @@ library ZeroDekompressorLib {
                     let chunk := calldataload(cdOffset)
                     // Load the first byte of the current chunk
                     let b1 := byte(0x00, chunk)
-                    // Load the second byte of the current chunk
-                    let b2 := byte(0x01, chunk)
 
-                    // If the second byte is 0x00, we expect it to be RLE encoded. Skip over memory by `b1` bytes.
+                    // If the first byte is 0x00, we expect it to be RLE encoded. Skip over memory by `b2` bytes.
                     // Otherwise, copy the byte as normal.
-                    switch and(iszero(b2), lt(add(cdOffset, 0x01), calldatasize()))
+                    switch iszero(b1)
                     case true {
+                        // Perform a positive lookahead to determine the length of the zeros run.
+                        let b2 := byte(0x01, chunk)
+
+                        if iszero(b2) {
+                            // Store the `InvalidInput()` selector in memory
+                            mstore(0x00, 0xb4fa3fb3)
+                            // Revert with the `InvalidInput()` selector
+                            revert(0x1c, 0x04)
+                        }
+
                         // Increment the calldata offset by 2 bytes to account for the RLE prefix and the zero byte.
                         cdOffset := add(cdOffset, 0x02)
                         // Increment the memory offset by `b1` bytes to retain `b1` zero bytes starting at `memOffset`.
-                        memOffset := add(memOffset, b1)
+                        memOffset := add(memOffset, b2)
                         // Increment the output length by `b1` bytes.
-                        outLength := add(outLength, b1)
+                        outLength := add(outLength, b2)
                     }
                     case false {
                         // Store the non-zero byte in memory at the current `memOffset`
