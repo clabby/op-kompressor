@@ -1,0 +1,9 @@
+/// @title MockDekompressor
+/// @author clabby <https://github.com/clabby>
+
+#include "src/lib/ZeroDekompressorLib.huff"
+
+#define macro MAIN() = takes (0) returns (0) {
+    DEKOMPRESS_CALLDATA(0x00)
+    0x00 mload 0x20 return
+}

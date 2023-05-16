@@ -1,0 +1,101 @@
+/// @title ZeroKompressorLib
+/// @author clabby <https://github.com/clabby>
+
+/// @dev Thrown when the calldata is not correctly encoded.
+#define error InvalidInput()
+
+/// @notice Decodes ZeroKompressed calldata into memory.
+/// @param mem_ptr The memory pointer to write the decompressed calldata to.
+/// @dev This function uses `returndatasize` as a way to push zero onto the stack.
+///      Do not use this function after an external call.
+/// TODO: Update `returndatasize` -> `push0` once Optimism mainnet supports Shanghai.
+#define macro DEKOMPRESS_CALLDATA(mem_ptr) = takes (0) returns (0) {
+    // Input stack:            []
+
+    // If the calldata is empty, jump to `complete_early` to return a zero-length array.
+    returndatasize          // [out_len]
+    calldatasize            // [calldatasize, out_len]
+    iszero                  // [calldatasize == 0, out_len]
+    complete_early jumpi    // [out_len]
+
+    // Set up the stack for the loop.
+    returndatasize          // [cd_offset, out_len]
+    0x20 <mem_ptr>          // [mem_ptr, 0x20, cd_offset, out_len]
+    add                     // [data_ptr, cd_offset, out_len]
+
+    // Loop through the calldata.
+    loop:
+        calldatasize        // [calldatasize, data_ptr, cd_offset, out_len]
+        dup3                // [cd_offset, calldatasize, data_ptr, cd_offset, out_len]
+        eq                  // [cd_offset == calldatasize, data_ptr, cd_offset, out_len]
+        complete jumpi      // [data_ptr, cd_offset, out_len]
+
+        // Load the calldata word at the current cd_offset.
+        dup2                // [cd_offset, data_ptr, cd_offset, out_len]
+        calldataload        // [chunk, data_ptr, cd_offset, out_len]
+
+        // Grab the first byte of the chunk.
+        dup1                // [chunk, chunk, data_ptr, cd_offset, out_len]
+        returndatasize      // [0x00, chunk, chunk, data_ptr, cd_offset, out_len]
+        byte                // [chunk[0], chunk, data_ptr, cd_offset, out_len]
+
+        // If the first byte is nonzero, jump to `nonzero`.
+        dup1                // [chunk[0], chunk[0], chunk, data_ptr, cd_offset, out_len]
+        nonzero jumpi       // [chunk[0], chunk, data_ptr, cd_offset, out_len]
+
+        ////////////////////////////////////////////////////////////////
+        //                   CASE: first byte == 0                    //
+        ////////////////////////////////////////////////////////////////
+
+        // Load the second byte of the chunk.
+        pop 0x01 byte       // [chunk[1], data_ptr, cd_offset, out_len]
+        dup1 iszero         // [chunk[1] == 0, chunk[1], data_ptr, cd_offset, out_len]
+        invalid_input jumpi // [chunk[1], data_ptr, cd_offset, out_len]
+
+        // Increment the calldata offset by 2 bytes to account for the RLE postfix and the zero byte.
+        swap2 0x02 add      // [cd_offset + 2, data_ptr, chunk[1], out_len]
+        swap2               // [chunk[1], data_ptr, cd_offset + 2, out_len]
+        // Increment the data offset by `b2` bytes to retain `b2` zero bytes starting at `memOffset`.
+        swap1 dup2 add      // [data_ptr + chunk[1], chunk[1], cd_offset + 2, out_len]
+        swap1               // [chunk[1], data_ptr + chunk[1], cd_offset + 2, out_len]
+        // Increment the output length by `b2` bytes.
+        swap3 dup4 add      // [out_len + chunk[1], data_ptr + chunk[1], cd_offset + 2, chunk[1]]
+        swap3 pop           // [data_ptr + chunk[1], cd_offset + 2, out_len + chunk[1]]
+        // Continue the loop
+        loop jump           // [data_ptr + chunk[1], cd_offset + 2, out_len + chunk[1]]
+
+        ////////////////////////////////////////////////////////////////
+        //                   CASE: first byte != 0                    //
+        ////////////////////////////////////////////////////////////////
+
+        nonzero:
+            // Store the non-zero byte in memory at the current `data_ptr`
+            dup3 mstore8    // [chunk, data_ptr, cd_offset, out_len]
+            pop             // [data_ptr, cd_offset, out_len]
+
+            // Increment the data offset by 1 byte to account for the non-zero byte we just wrote.
+            0x01 add        // [data_ptr + 1, cd_offset, out_len]
+            // Increment the calldata offset by 1 byte to account for the non-zero byte.
+            swap1 0x01 add  // [cd_offset + 1, data_ptr + 1, out_len]
+            swap1           // [data_ptr + 1, cd_offset + 1, out_len]
+            // Increment the output length by 1 byte.
+            swap2 0x01 add  // [out_len + 1, cd_offset + 1, data_ptr + 1]
+            swap2           // [data_ptr + 1, cd_offset + 1, out_len + 1]
+            // Continue the loop
+            loop jump       // [data_ptr + 1, cd_offset + 1, out_len + 1]
+
+    invalid_input:
+        0xb4fa3fb3          // [InvalidInput(), chunk[1], data_ptr, cd_offset, out_len]
+        returndatasize      // [0x00, InvalidInput(), chunk[1], data_ptr, cd_offset, out_len]
+        mstore              // [chunk[1], data_ptr, cd_offset, out_len]
+        0x04 0x1c revert    //<-
+
+    complete:
+        pop pop             // [out_len]
+    complete_early:
+        // Store the output length at the memory pointer.
+        <mem_ptr>           // [mem_ptr, out_len]
+        mstore              // []
+
+    // Output stack:           []
+}

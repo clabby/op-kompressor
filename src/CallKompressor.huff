@@ -1,0 +1,39 @@
+/// @title CallKompressor
+/// @author clabby <https://github.com/clabby>
+
+#include "src/lib/ZeroDekompressorLib.huff"
+
+/// @dev When the `CallKompressor` receives a payload, it first decompresses it using
+/// `ZeroDekompressorLib.dekompressCalldata()`. Once the payload is decompressed, the
+/// `to` address as well as the payload are extracted in order to forward the call.
+///
+/// The decompressed payload is expected to be in the following format:
+/// ╔═════════╤═══════════════════╗
+/// ║ Bytes   │ [0, 20)   [20, n) ║
+/// ╟─────────┼───────────────────╢
+/// ║ Element │ to        payload ║
+/// ╚═════════╧═══════════════════╝
+#define macro MAIN() = takes (0) returns (0) {
+    // Decompress the received payload
+    DEKOMPRESS_CALLDATA(returndatasize) // []
+
+    // Extract the `to` address as well as the payload to forward.
+    returndatasize                      // [0x00]
+    returndatasize                      // [0x00, 0x00]
+    0x14 returndatasize mload sub       // [payload_length, 0x00, 0x00]
+    0x34                                // [payload_offset, payload_length, 0x00, 0x00]
+    callvalue                           // [value, payload_offset, payload_length, 0x00, 0x00]
+    0x20 mload 0x60 shr                 // [to, value, payload_offset, payload_length, 0x00, 0x00]
+    gas                                 // [gas, to, value, payload_offset, payload_length, 0x00, 0x00]
+    call                                // [success]
+
+    returndatasize 0x00 0x00            // [0x00, 0x00, returndatasize, success]
+    returndatacopy                      // [success]
+
+    success jumpi                       // []
+
+    returndatasize 0x00 revert          //<-
+
+    success:
+        returndatasize 0x00 return      //<-
+}

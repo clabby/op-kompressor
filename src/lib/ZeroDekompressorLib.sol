@@ -45,11 +45,11 @@ library ZeroDekompressorLib {
                             revert(0x1c, 0x04)
                         }
 
-                        // Increment the calldata offset by 2 bytes to account for the RLE prefix and the zero byte.
+                        // Increment the calldata offset by 2 bytes to account for the RLE postfix and the zero byte.
                         cdOffset := add(cdOffset, 0x02)
-                        // Increment the memory offset by `b1` bytes to retain `b1` zero bytes starting at `memOffset`.
+                        // Increment the memory offset by `b2` bytes to retain `b2` zero bytes starting at `memOffset`.
                         memOffset := add(memOffset, b2)
-                        // Increment the output length by `b1` bytes.
+                        // Increment the output length by `b2` bytes.
                         outLength := add(outLength, b2)
                     }
                     case false {
