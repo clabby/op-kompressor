@@ -10,9 +10,13 @@
 
 ## `CallKompressor`
 
-The `CallKompressor` (@ commit b9f239402e32afb0e01af6e7d8c073231e40df72) is deployed on [Optimism](https://optimism.io) @ [`0x6C56659A3EBE86394bF67889d860Fc74F404B867`](https://optimistic.etherscan.io/address/0x6c56659a3ebe86394bf67889d860fc74f404b867#code)
+The `CallKompressor.huff` (@ commit c2cff9c) is deployed on [Optimism](https://optimism.io) @ [`0xf6fd99599d7121cbbc5e7c95d2ba83aa273d89c8`](https://optimistic.etherscan.io/address/0xf6fd99599d7121cbbc5e7c95d2ba83aa273d89c8)
 
-## Results
+*Deprecated Versions*
+
+The `CallKompressor` (@ commit b9f2394) is deployed on [Optimism](https://optimism.io) @ [`0x6C56659A3EBE86394bF67889d860Fc74F404B867`](https://optimistic.etherscan.io/address/0x6c56659a3ebe86394bf67889d860fc74f404b867#code)
+
+### Results
 | Transaction                                                                                                                                | L1 Gas Usage | ZeroKompressed? |
 |--------------------------------------------------------------------------------------------------------------------------------------------|--------------|-----------------|
 | [Direct ID Uniswap Payload](https://optimistic.etherscan.io/tx/0xb19ff8aed6b293903c9a608ef0906c5d7c45087fa5646f5e7632685c231280c0)         | 8,828        | No              |
