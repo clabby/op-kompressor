@@ -52,7 +52,7 @@ library ZeroDekompressorLib {
                         // Increment the output length by `b2` bytes.
                         outLength := add(outLength, b2)
                     }
-                    case false {
+                    default {
                         // Store the non-zero byte in memory at the current `memOffset`
                         mstore8(memOffset, b1)
 

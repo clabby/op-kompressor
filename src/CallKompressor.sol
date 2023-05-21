@@ -41,7 +41,7 @@ contract CallKompressor {
             // Bubble up the returndata
             switch success
             case true { return(0x00, returndatasize()) }
-            case false { revert(0x00, returndatasize()) }
+            default { revert(0x00, returndatasize()) }
         }
     }
 }
