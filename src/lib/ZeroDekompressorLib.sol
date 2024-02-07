@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-/// @title ZerkDekompressorLib
+/// @title ZeroDekompressorLib
 /// @author clabby <https://github.com/clabby>
 library ZeroDekompressorLib {
     /// @dev Thrown when the calldata is not correctly encoded.
